@@ -17,6 +17,9 @@
 """Control Vector using a webpage on your computer.
 
 This example lets you control Vector by Remote Control, using a webpage served by Flask.
+
+This code has bee modified for our HRI user study.
+For reference, the original code is here: https://github.com/anki/vector-python-sdk/tree/master/examples/apps/remote_control
 """
 
 import io
@@ -25,7 +28,6 @@ import sys
 import time
 from enum import Enum
 from lib import flask_helpers
-import pandas as pd
 
 import anki_vector
 from anki_vector import util
@@ -130,9 +132,6 @@ class Subroutines:
         finally:
             return True
 
-
-
-
 class RemoteControlVector:
 
     def __init__(self, robot):
@@ -158,7 +157,8 @@ class RemoteControlVector:
         self.mouse_dir = 0
         self.routines = Subroutines(self)
 
-        #all_anim_names = self.vector.anim.anim_list
+        #In Anki's original program, the subroutines actually mapped to Vector's animations
+        #Therefore, in this program, anim refers to routines
         self.anim_names = self.routines.routines
 
         default_anims_for_keys = ["flash_cube_lights",  # 0
@@ -177,20 +177,15 @@ class RemoteControlVector:
         for default_key in default_anims_for_keys:
             if default_key not in self.anim_names:
                 print("Error: default_anim %s is not in the list of animations" % default_key)
-            #try:
-            #    anim_name = self.anim_names[default_key]
-            #except ValueError:
-            #    print("Error: default_anim %s is not in the list of animations" % default_key)
-            self.anim_index_for_key[kI] = self.anim_names.index(default_key)
+            else:
+                self.anim_index_for_key[kI] = self.anim_names.index(default_key)
             kI += 1
 
         self.action_queue = []
         self.text_to_say = "Hi I'm Vector"
 
     def set_anim(self, key_index, anim_index):
-        self.anim_index_for_key[key_index] = anim_index
-
-    
+        self.anim_index_for_key[key_index] = anim_index   
 
     def update_drive_state(self, key_code, is_key_down, speed_changed):
         """Update state of driving intent from keyboard, and if anything changed then call update_driving"""
@@ -268,10 +263,6 @@ class RemoteControlVector:
                 #self.queue_action((self.vector.anim.play_animation, anim_name))
             elif key_code == ord(' '):
                 self.queue_action((self.vector.behavior.say_text, self.text_to_say))
-            elif key_code == 13: #enter
-                self.answer_question(self.math_answer)
-            #elif key_code == ord('X'):
-            #    self.queue_action((self.vector.anim.play_animation_trigger, self.selected_anim_trigger_name))
 
     def key_code_to_anim_name(self, key_code):
         key_num = key_code - ord('0')
@@ -637,14 +628,6 @@ def handle_sayText():
     message = json.loads(request.data.decode("utf-8"))
     if flask_app.remote_control_vector:
         flask_app.remote_control_vector.text_to_say = message['textEntered']
-    return ""
-
-@flask_app.route('/mathText', methods=['POST'])
-def handle_mathText():
-    """Called from Javascript whenever the mathText text field is modified"""
-    message = json.loads(request.data.decode("utf-8"))
-    if flask_app.remote_control_vector:
-        flask_app.remote_control_vector.math_answer = message['textEntered']
     return ""
 
 @flask_app.route('/updateVector', methods=['POST'])
