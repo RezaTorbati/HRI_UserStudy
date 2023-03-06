@@ -1,5 +1,5 @@
 # HRI Project
-Initial code taken from [here](https://github.com/anki/vector-python-sdk/tree/master/examples/apps)
+Initial code taken from [here](https://github.com/anki/vector-python-sdk/tree/master/examples/apps/remote_control)
 
 ## Requirements
 * Python 3.7
