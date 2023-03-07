@@ -20,6 +20,12 @@ This example lets you control Vector by Remote Control, using a webpage served b
 
 This code has bee modified for our HRI user study.
 For reference, the original code is here: https://github.com/anki/vector-python-sdk/tree/master/examples/apps/remote_control
+
+Current known issues:
+Sometimes program will immediately error out with the ListAnimations error. Must rerun program
+Vector will disconnect from cube if not constantly communicating with it (automate this?)
+Sometimes go_to_saved_pose doesn't work. Just run again
+Sometimes vector continues driving after key release. Just press and let go of that key again
 """
 
 import io
@@ -78,7 +84,8 @@ class Subroutines:
         self.remote = remote
         self.robot = remote.vector
         self.saved_posed = None
-        self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'flash_cube_lights', 'save_pose', 'go_to_saved_pose']
+        self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'flash_cube_lights', 'save_pose', 'go_to_saved_pose', 
+                         'put_cube_down']
 
     def connect_to_cube(self):
         self.robot.world.connect_cube()
@@ -100,6 +107,10 @@ class Subroutines:
             self.robot.behavior.roll_cube(
                 self.robot.world.connected_light_cube,
                 num_retries=3)
+    
+    def put_cube_down(self):
+        if self.robot.world.connected_light_cube:
+            self.robot.behavior.place_object_on_ground_here(num_retries=3)
     
     def save_pose(self):
         self.saved_pose = self.robot.pose
@@ -125,6 +136,8 @@ class Subroutines:
                 self.save_pose()
             elif key == "go_to_saved_pose":
                 self.go_to_saved_pose()
+            elif key == "put_cube_down":
+                self.put_cube_down()
             else:
                 print("Warning, not mapping to a function")
         except Exception as e:
@@ -161,18 +174,16 @@ class RemoteControlVector:
         #Therefore, in this program, anim refers to routines
         self.anim_names = self.routines.routines
 
-        default_anims_for_keys = ["flash_cube_lights",  # 0
-                                  "connect_to_cube",  # 1
-                                  "drive_to_charger",  # 2
-                                  "roll_cube",  # 3
-                                  "pick_up_cube",  # 4
-                                  "pick_up_cube",  # 5
-                                  "pick_up_cube",  # 6
-                                  "pick_up_cube",  # 7
-                                  "save_pose",  # 8
-                                  "go_to_saved_pose"]  # 9
+        default_anims_for_keys = ["connect_to_cube",  # 1
+                                  "flash_cube_lights",  # 2
+                                  "pick_up_cube",  # 3
+                                  "put_cube_down",  # 4
+                                  "roll_cube",  # 5
+                                  "drive_to_charger",  # 6
+                                  "save_pose",  # 7
+                                  "go_to_saved_pose"]  # 8
         
-        self.anim_index_for_key = [0] * 10
+        self.anim_index_for_key = [0] * 8
         kI = 0
         for default_key in default_anims_for_keys:
             if default_key not in self.anim_names:
@@ -257,7 +268,7 @@ class RemoteControlVector:
 
         # Handle any keys being released (e.g. the end of a key-click)
         if not is_key_down:
-            if ord('9') >= key_code >= ord('0'):
+            if ord('8') >= key_code >= ord('1'):
                 anim_name = self.key_code_to_anim_name(key_code)
                 self.queue_action((self.routines.run_subroutine, anim_name))
                 #self.queue_action((self.vector.anim.play_animation, anim_name))
@@ -265,7 +276,7 @@ class RemoteControlVector:
                 self.queue_action((self.vector.behavior.say_text, self.text_to_say))
 
     def key_code_to_anim_name(self, key_code):
-        key_num = key_code - ord('0')
+        key_num = key_code - ord('1')
         anim_num = self.anim_index_for_key[key_num]
         anim_name = self.anim_names[anim_num]
         return anim_name
@@ -329,6 +340,7 @@ class RemoteControlVector:
 
 def get_anim_sel_drop_down(selectorIndex):
     html_text = """<select onchange="handleDropDownSelect(this)" name="animSelector""" + str(selectorIndex) + """">"""
+    selectorIndex -= 1
     i = 0
     for anim_name in flask_app.remote_control_vector.anim_names:
         is_selected_item = (i == flask_app.remote_control_vector.anim_index_for_key[selectorIndex])
@@ -341,9 +353,9 @@ def get_anim_sel_drop_down(selectorIndex):
 
 def get_anim_sel_drop_downs():
     html_text = ""
-    for i in range(10):
+    for i in range(8):
         # list keys 1..9,0 as that's the layout on the keyboard
-        key = i + 1 if (i < 9) else 0
+        key = i + 1 #if (i < 9) else 0
         html_text += str(key) + """: """ + get_anim_sel_drop_down(key) + """<br>"""
     return html_text
 
