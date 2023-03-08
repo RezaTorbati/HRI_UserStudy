@@ -86,10 +86,12 @@ class Subroutines:
         self.saved_posed = None
         self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'flash_cube_lights', 'save_pose', 'go_to_saved_pose', 
                          'put_cube_down']
+        self.runs = 0
+        self.time = 0
 
     def connect_to_cube(self):
         self.robot.world.connect_cube()
-
+        
     def flash_cube_lights(self):
         self.robot.world.flash_cube_lights()
 
@@ -120,6 +122,7 @@ class Subroutines:
             self.robot.behavior.go_to_pose(self.saved_pose)
     
     def run_subroutine(self, key):
+        time = time.time()
         try:
             print(key)
             if key == 'pick_up_cube':
@@ -143,6 +146,8 @@ class Subroutines:
         except Exception as e:
             print(e)
         finally:
+            self.time += time.time() - time
+            self.runs += 1
             return True
 
 class RemoteControlVector:
