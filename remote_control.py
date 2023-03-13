@@ -87,7 +87,6 @@ class Subroutines:
         self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'flash_cube_lights', 'save_pose', 'go_to_saved_pose', 
                          'put_cube_down']
         self.runs = 0
-        self.time = 0
 
     def connect_to_cube(self):
         self.robot.world.connect_cube()
@@ -122,7 +121,6 @@ class Subroutines:
             self.robot.behavior.go_to_pose(self.saved_pose)
     
     def run_subroutine(self, key):
-        time = time.time()
         try:
             print(key)
             if key == 'pick_up_cube':
@@ -146,7 +144,6 @@ class Subroutines:
         except Exception as e:
             print(e)
         finally:
-            self.time += time.time() - time
             self.runs += 1
             return True
 
@@ -656,7 +653,8 @@ def handle_updateVector():
 def run():
     args = util.parse_command_args()
 
-    with anki_vector.AsyncRobot(args.serial, enable_face_detection=True, enable_custom_object_detection=True) as robot:
+    #with anki_vector.AsyncRobot(args.serial, enable_face_detection=True, enable_custom_object_detection=True) as robot:
+    with anki_vector.AsyncRobot() as robot:
         flask_app.remote_control_vector = RemoteControlVector(robot)
 
         robot.camera.init_camera_feed()
