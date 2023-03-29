@@ -1,29 +1,39 @@
 import pandas as pd
 import sys
+import os
 
-df = pd.read_csv('questions.csv')
-df = df.reset_index()
+def run_program(id):
+	df = pd.read_csv('questions.csv')
+	df = df.reset_index()
 
-score = 0
-for index, row in df.iterrows():
-	answer = input(f"{row['term1']} * {row['term2']} = ")
-	try:
-		if int(answer) == int(row['answer']):
-			print('Correct!')
-			score += 1
-		else:
-			print('Incorrect')
-	except ValueError:
-		if answer == 'q':
-			break
-		else:
-			print("Please input an integer")
-	print('Current Score:', score)
+	score = 0
+	for index, row in df.iterrows():
+		answer = input(f"{row['term1']} * {row['term2']} = ")
+		try:
+			if int(answer) == int(row['answer']):
+				print('Correct!')
+				score += 1
+			else:
+				print('Incorrect')
+		except ValueError:
+			if answer == 'q':
+				break
+			else:
+				print("Please input an integer")
+		print('Current Score:', score)
 
-#If command line args are given:
-#Writes out "arg2: score" to the file "arg1"		
-if len(sys.argv) > 2:
-	f = open(sys.argv[1], 'a')
-	f.write(f'{sys.argv[2]}: {score}\n')
+	#Saves the score	
+	f = open(f"logs/{id}/{id}_math_score.txt", 'w')
+	f.write(str(score))
 	f.close()
-	print(f"Score written to {sys.argv[1]}")
+	#print(f"Score written to {sys.argv[1]}")
+	print("Final score:", score)
+
+if __name__=="__main__":
+	if len(sys.argv) < 2:
+		print("Please enter participant ID")
+	else:
+		id = sys.argv[1]
+		if not os.path.exists(f'logs/{id}'):
+			os.makedirs(f"logs/{id}")
+		run_program(id)
