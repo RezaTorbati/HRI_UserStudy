@@ -84,15 +84,31 @@ class Subroutines:
         self.remote = remote
         self.robot = remote.vector
         self.saved_posed = None
-        self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'flash_cube_lights', 'save_pose', 'go_to_saved_pose', 
-                         'put_cube_down']
+        self.routines = ['connect_to_cube','pick_up_cube', "drive_to_charger", "roll_cube", 'save_pose', 'go_to_saved_pose', 
+                         'put_cube_down', 'set_cube_color_red', 'set_cube_color_green', 'set_cube_color_blue']
         self.runs = 0
 
     def connect_to_cube(self):
         self.robot.world.connect_cube()
         
     def flash_cube_lights(self):
-        self.robot.world.flash_cube_lights()
+        if self.robot.world.connected_light_cube:
+            self.robot.world.flash_cube_lights()
+
+    def set_color_red(self):
+        if self.robot.world.connected_light_cube:
+            cube = self.robot.world.connected_light_cube
+            cube.set_lights(anki_vector.lights.red_light)
+
+    def set_color_green(self):
+        if self.robot.world.connected_light_cube:
+            cube = self.robot.world.connected_light_cube
+            cube.set_lights(anki_vector.lights.green_light)
+
+    def set_color_blue(self):
+        if self.robot.world.connected_light_cube:
+            cube = self.robot.world.connected_light_cube
+            cube.set_lights(anki_vector.lights.blue_light)
 
     def pick_up_cube(self):
         if self.robot.world.connected_light_cube:
@@ -139,6 +155,12 @@ class Subroutines:
                 self.go_to_saved_pose()
             elif key == "put_cube_down":
                 self.put_cube_down()
+            elif key == 'set_cube_color_red':
+                self.set_color_red()
+            elif key == 'set_cube_color_green':
+                self.set_color_green()
+            elif key == 'set_cube_color_blue':
+                self.set_color_blue()
             else:
                 print("Warning, not mapping to a function")
         except Exception as e:
@@ -177,7 +199,7 @@ class RemoteControlVector:
         self.anim_names = self.routines.routines
 
         default_anims_for_keys = ["connect_to_cube",  # 1
-                                  "flash_cube_lights",  # 2
+                                  "set_cube_color_red",  # 2
                                   "pick_up_cube",  # 3
                                   "put_cube_down",  # 4
                                   "roll_cube",  # 5
@@ -198,7 +220,7 @@ class RemoteControlVector:
         self.text_to_say = "Hi I'm Vector"
 
     def set_anim(self, key_index, anim_index):
-        self.anim_index_for_key[key_index] = anim_index   
+        self.anim_index_for_key[key_index-1] = anim_index   
 
     def update_drive_state(self, key_code, is_key_down, speed_changed):
         """Update state of driving intent from keyboard, and if anything changed then call update_driving"""
