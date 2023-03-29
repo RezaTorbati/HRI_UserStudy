@@ -30,10 +30,9 @@ def run_program(id):
 	print("Final score:", score)
 
 if __name__=="__main__":
-	if len(sys.argv) < 2:
-		print("Please enter participant ID")
-	else:
-		id = sys.argv[1]
-		if not os.path.exists(f'logs/{id}'):
-			os.makedirs(f"logs/{id}")
-		run_program(id)
+	f = open("participantID.txt", "r")
+	id = str.strip(f.read())
+	f.close()
+	if not os.path.exists(f'logs/{id}'):
+		os.makedirs(f"logs/{id}")
+	run_program(id)

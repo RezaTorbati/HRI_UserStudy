@@ -30,6 +30,7 @@ Sometimes vector continues driving after key release. Just press and let go of t
 
 import io
 import json
+import os
 import sys
 import time
 from enum import Enum
@@ -38,6 +39,8 @@ from lib import flask_helpers
 import anki_vector
 from anki_vector import util
 from anki_vector import annotate
+
+partipantID = ''
 
 try:
     from flask import Flask, request
@@ -194,6 +197,12 @@ class RemoteControlVector:
         self.mouse_dir = 0
         self.routines = Subroutines(self)
 
+        self.previousTime = time.time()
+        self.trialTime = 0
+        self.motorsMovingTime = 0
+        self.pathingOrDockingTime = 0
+        self.iterations = 0
+
         #In Anki's original program, the subroutines actually mapped to Vector's animations
         #Therefore, in this program, anim refers to routines
         self.anim_names = self.routines.routines
@@ -311,7 +320,24 @@ class RemoteControlVector:
         self.action_queue.append(new_action)
 
     def update(self):
-        """Try and execute the next queued action"""
+        """Updates the times and then tries and execute the next queued action"""
+        self.iterations += 1
+        currentTime = time.time()
+        self.trialTime += currentTime - self.previousTime
+        if self.vector.status.are_motors_moving:
+            self.motorsMovingTime += currentTime - self.previousTime
+        if self.vector.status.is_pathing or self.vector.status.is_docking_to_marker:
+            self.pathingOrDockingTime += currentTime - self.previousTime
+        self.previousTime = currentTime
+
+        if self.iterations % 10 == 0:
+            f = open(f"logs/{participantID}/{participantID}_trial_score.txt", 'w')
+            f.write(f'Trial Time: {self.trialTime}\n')
+            f.write(f'Moving Time: {self.motorsMovingTime}\n')
+            f.write(f'Pathing or Docking Time: {self.pathingOrDockingTime}')
+            f.close()
+
+
         if self.action_queue and len(self.action_queue) > 0:
             queued_action, action_args = self.action_queue[0]
             if queued_action(action_args):
@@ -686,6 +712,12 @@ def run():
 
 
 if __name__ == '__main__':
+    f = open("participantID.txt", "r")
+    participantID = str.strip(f.read())
+    f.close()
+    print(id)
+    if not os.path.exists(f'logs/{id}'):
+        os.makedirs(f"logs/{id}")
     try:
         run()
     except KeyboardInterrupt as e:
