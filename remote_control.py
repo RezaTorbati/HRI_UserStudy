@@ -715,7 +715,6 @@ if __name__ == '__main__':
     f = open("participantID.txt", "r")
     participantID = str.strip(f.read())
     f.close()
-    print(id)
     if not os.path.exists(os.path.join("logs", participantID)):
         os.makedirs(os.path.join("logs", participantID))
     try:
