@@ -716,8 +716,8 @@ if __name__ == '__main__':
     participantID = str.strip(f.read())
     f.close()
     print(id)
-    if not os.path.exists(f'logs/{id}'):
-        os.makedirs(f"logs/{id}")
+    if not os.path.exists(os.path.join("logs", id)):
+        os.makedirs(os.path.join("logs", id))
     try:
         run()
     except KeyboardInterrupt as e:

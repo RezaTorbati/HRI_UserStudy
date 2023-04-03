@@ -33,6 +33,6 @@ if __name__=="__main__":
 	f = open("participantID.txt", "r")
 	id = str.strip(f.read())
 	f.close()
-	if not os.path.exists(f'logs/{id}'):
-		os.makedirs(f"logs/{id}")
+	if not os.path.exists(os.path.join("logs", id)):
+		os.makedirs(os.path.join("logs", id))
 	run_program(id)
