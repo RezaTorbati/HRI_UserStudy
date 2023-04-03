@@ -713,11 +713,11 @@ def run():
 
 if __name__ == '__main__':
     f = open("participantID.txt", "r")
-    id = str.strip(f.read())
+    participantID = str.strip(f.read())
     f.close()
     print(id)
-    if not os.path.exists(os.path.join("logs", id)):
-        os.makedirs(os.path.join("logs", id))
+    if not os.path.exists(os.path.join("logs", participantID)):
+        os.makedirs(os.path.join("logs", participantID))
     try:
         run()
     except KeyboardInterrupt as e:
